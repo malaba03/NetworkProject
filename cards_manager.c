@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "cards_manager.h"
+#include "functions.h"
 
 int is_prime(int number)
 {
@@ -166,7 +167,8 @@ char* get_expir_date(int nb_year)
 
     return date_expir;
 }
-void generate_card(){
+char* generate_card(){
+    printf("********** generate_card started **********\n");
     int bin = 1470;
     int a = bin;
 
@@ -199,37 +201,18 @@ void generate_card(){
     int *signature = (int*)malloc(2*sizeof(int));
     signature = msg_signature(expir_date, key);
 
-    printf("card_number: %d %8.4d %8.4d %d code:%d date: %s\n", a, signature[0], signature[1], p, g, expir_date);
+    char *card_infos = malloc(27*sizeof(char));
+
+    sprintf(card_infos, "%d%04d%04d%d-%03d-%s\n", a, signature[0], signature[1], p, g, expir_date);
+
+    printf("card:%s\n", card_infos);
+    printf("********** generate_card finished **********\n");
+    free(key);
+    free(signature);
+    return card_infos;
 }
 
-char *str_sub (const char *s, unsigned int start, unsigned int end)
-{
-   char *new_s = NULL;
 
-   if (s != NULL && start < end)
-   {
-/* (1)*/
-      new_s = malloc (sizeof (*new_s) * (end - start + 2));
-      if (new_s != NULL)
-      {
-         int i;
-
-/* (2) */
-         for (i = start; i <= end; i++)
-         {
-/* (3) */
-            new_s[i-start] = s[i];
-         }
-         new_s[i-start] = '\0';
-      }
-      else
-      {
-         fprintf (stderr, "Memoire insuffisante\n");
-         exit (EXIT_FAILURE);
-      }
-   }
-   return new_s;
-}
 int check_card_number(char *number, char *expir_date, char *code){
     int a = atoi(str_sub(number, 0,3));
     int s = atoi(str_sub(number, 4,7));
@@ -249,12 +232,7 @@ int check_card_number(char *number, char *expir_date, char *code){
 
     // Calcule (g^a*r %p)*(r^s %p)%p
     int temp = pow_modulo_long((long)g_a_r *r_s, 1, p); //(g_a_r *r_s)%p;
+
     // Vérification de la signature
-
-    printf("a= %d \n", a);
-    printf("s= %d \n", s);
-    printf("r= %d \n", r);
-    printf("p= %d \n", p);
-
     return g_h_m == temp;
 }

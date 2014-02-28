@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "database.h"
+#include "functions.h"
 
 typedef struct
 {
@@ -11,263 +13,300 @@ typedef struct
     char *birthday;
 } client;
 
-void createClient(char *firstname, char *lastname, char *birthday)
+int save_client(FILE* f_client, char *firstname, char *lastname, char *birthday)
 {
-    FILE* f_client = fopen("database/clients.dat", "r+");
-
+    //FILE* f_client = fopen("database/clients.dat", "r+");
+    int nb_clients = 0;
+    printf("saving client: %s-%s-%s\n", firstname, lastname, birthday);
     if (f_client != NULL)
     {
         // On peut lire et écrire dans le fichier
-        printf("Ok 6");
-
-        client new_client;
-        new_client.firstname = firstname;
-        new_client.lastname = lastname;
-        new_client.birthday = birthday;
-
         char buffer[200];
         // go to end file
         //fseek(f_client, 0, SEEK_END);
-        int nb_clients = 1;
+        nb_clients = 1;
         while(fgets(buffer, 200, f_client)) {
             nb_clients ++;
         }
-        new_client.id = nb_clients;
-        fprintf(f_client, "%d %s %s %s \n", new_client.id, new_client.firstname, new_client.lastname, new_client.birthday);
+        //id prenom nom date-naissance
+        fprintf(f_client, "%d %s %s %s\n", nb_clients, firstname, lastname, birthday);
 
-        fflush(f_client);
+        //fflush(f_client);
         //rewind(f_client);
         //fclose(f_client);
     }
     else
     {
         // On affiche un message d'erreur si on veut
-        printf("Impossible d'ouvrir le fichier des clients");
+        perror("ERROR : Can not access clients file!");
     }
+    return nb_clients;
 }
 
-void save_card(char* number, unsigned int date_expir, unsigned int code)
+void save_card(FILE* f_card, char *card_infos, int client_id)
 {
-    FILE* f_card = fopen("database/cards.dat", "r+");
-
+    //FILE* f_card = fopen("database/cards.dat", "r+");
+    printf("***** Saving card infos \n");
     if (f_card != NULL)
     {
-       char buffer[200];
+
+        char buffer[200];
         // go to end file
         while(fgets(buffer, 200, f_card)) {}
 
-        int solde = 0.0; // Solde de depart
-        fprintf(f_card, "%s %d %d %.2f \n", number, date_expir, code, solde);
+        double solde = 0.0; // Solde de depart
+        //numero date-expiration code etat user_id solde
+        fprintf(f_card, "%s %s %s %d %d %.2f\n", str_sub(card_infos, 0,15), str_sub(card_infos, 21, 26), str_sub(card_infos, 17, 19), -1, client_id, solde);
 
         fflush(f_card);
-        fclose(f_card);
+        //fclose(f_card);
     }
     else
     {
-        printf("Impossible d'ouvrir le fichier des clients");
+        perror("ERROR: Can not access cards file!");
     }
 }
 
-int is_primary(int number){
-    int i;
-    for(i=2; i<number; i++){
-        if(number%i == 0) return 0;
-    }
-    return 1;
-}
-
-int pow_modulo(unsigned int a, unsigned int b, unsigned int p){
-   if (b==0) return 1;
-    if (b==1) return a%p;
-
-    if ( (b & 0x01 ) == 0){
-        int c = pow_modulo(a, b >> 1, p);
-        return (c * c)%p;
-    }
-    else{
-        return (a * pow_modulo(a, b - 1, p))%p;
-    }
-}
-
-int pow_modulo_long(unsigned long a, unsigned int b, unsigned int p){
-    if (b==0) return 1;
-    if (b==1) return a%p;
-
-    if ( (b & 0x01 ) == 0){
-        int c = pow_modulo_long(a, b >> 1, p);
-        return (c * c)%p;
-    }
-    else{
-        return (a * pow_modulo_long(a, b - 1, p))%p;
-    }
-}
-
-int pow_modulo_long_long(long long a, unsigned int b, unsigned int p){
-    if (b==0) return 1;
-    if (b==1) return a%p;
-
-    if ( (b & 0x01 ) == 0){
-        int c = pow_modulo_long_long(a, b >> 1, p);
-        return (c * c)%p;
-    }
-    else{
-        return (a * pow_modulo_long_long(a, b - 1, p))%p;
-    }
-}
-
-
-long long transforme_m_to_ASCII(char *msg)
+int activate_card(FILE* f_card, char *number, char *expir_date, char *code)
 {
-    long long msg_ascii;
-    int i;
+    printf("card to act: %s-%s-%s", number,expir_date, code);
+    printf("***** ACTIVATE STARTED *****\n");
 
-    for(i=0; i<6; ++i){
-        char c = msg[i];
-        int ascii_i = (int)c;
-        if(i==0)
-        {
-            msg_ascii = (long long)ascii_i;
-        }
-        else
-        {
-            msg_ascii = 100*msg_ascii + ascii_i;
-        }
-    }
-
-    return msg_ascii;
-}
-
-int pgcd(int a, int b){
-    if(b==0)return a;
-// D'aprés Euclide, pgcd(a, b) = pgcd(b, a%b) si a > b.
-    return pgcd(b,a%b);
-}
-
-int phi(int n){
-    int fi = 0;	// Déclare une entier qui va contenir la valeur de phi et l'initialise à 0.
-    /*
-     * Le phi d'un nombre est déterminé par le nombre de nombres premiers avec lui et
-     * inférieur à lui
-     */
-     int i;
-     for(i=1; i < n; i++){
-         if(pgcd(i,n) == 1)	fi +=1; // A chaque fois que le pcgd est 1, on incrémente l
-     }
-    return fi; // Retourne la valeur de phi.
-}
-
-int* msg_signature(char *msg, int *key)
-{
-    int a = key[0];
-    int g = key[1];
-    int p = key[2];
-
-    //Calcule de H(m) = m_to_ascii*m_to_ascii%p
-    long long m_to_ascii = transforme_m_to_ASCII(msg);
-    int h_m = pow_modulo_long_long(m_to_ascii, 2, p);
-    //printf("h_m: %d \n", h_m);
-    srand((unsigned)time(NULL));
-    int k = rand()%(p-1);
-    // Génére et vérifie jusqu'à avoir k entre 1 et p-1.
-    while(pgcd(k, p-1)!=1 || k <= 1){
-        k = rand()%(p-1);
-    }
-
-    int r = pow_modulo_long((long)g, k, p);
-    //printf("r: %d\n", r);
-
-    // Calcule l'inverse de k
-    int fi = phi(p-1);						// Calcule phi(p-1)
-    //printf("fi: %d\n", fi);
-
-    int inv_k = pow_modulo((long)k, fi-1,p-1);	// calcule l'inverse de k.
-    //printf("inv_k: %d\n", inv_k);
-
-    // Calcule la valeur de s
-    long s = a*r%(p-1);
-    s = h_m - s; //(inv_k*(h_m-a*r)%(p-1) + (p-1))%(p-1)
-    s = inv_k*s%(p-1);
-   // s = s%(p-1);
-    s = s +(p-1);	// On y ajoute p-1 au cas où s serait négatif.
-    s = s%(p-1);
-    int *signature=(int*)malloc(2*sizeof(int));
-    signature[0] = (int)s;
-    signature[1] = r;
-    //printf("s: %ld\n", s);
-    return signature;
-}
-
-char* get_expir_date()
-{
-    struct tm
+    int response = 0;
+    if (f_card != NULL)
     {
-        int tm_sec;       /* secondes (0,59) */
-        int tm_min;       /* minutes (0,59) */
-        int tm_hour;      /* heures depuis minuit (0,23) */
-        int tm_mday;      /* jour du mois (0,31) */
-        int tm_mon;       /* mois depuis janvier (0,11) */
-        int tm_year;      /* années écoulées depuis 1900 */
-        int tm_wday;      /* jour depuis dimanche (0,6) */
-        int tm_tm_yday;   /* jour depuis le 1er janvier (0,365) */
-        int tm_isdst;
-    };
+        char buffer[200];
+        // go to end file
+        int sz_line = 50;
+        int line = 0;
+        char **content;
+        content = malloc(1*sizeof(*content));
 
-    time_t intps;
-    struct tm *p_datetime;
-    intps = time(NULL);
-    p_datetime = (struct tm*)localtime(&intps);
+        char *num_f = malloc(16*sizeof(char));
+        char *date_f = malloc(16*sizeof(char));
+        char *code_f = malloc(3*sizeof(char));
+        int state;
 
-    int month_expir = (p_datetime->tm_mon+1)%12;
-    int date_expir_int = month_expir*10000 + (1900+p_datetime->tm_year+1);
+        rewind(f_card);
+        while(fgets(buffer, 200, f_card)) {
+            int usrId;
+            float solde;
+            sscanf (buffer,"%s %s %s %d %d %f", num_f, date_f, code_f, &state, &usrId, &solde);
+            //printf("Values line: %s %s %s %d %d %.2f\n", num_f, date_f, code_f, state, usrId, solde);
+            if(line>0){
+                content = realloc(content, (line+1)*sizeof(*content) );
+            }
+            content[line] = malloc(sz_line*sizeof(char));
+            if(content[line]==NULL){
+                perror("ERROR: Can not allocate memory\n");
+                exit(1);
+            }
 
-    char *date_expir = malloc(6*sizeof(char));
-    sprintf(date_expir, "%06d", date_expir_int);
+            if(atol(num_f)==atol(number) && atoi(date_f)==atoi(expir_date) && atoi(code_f)==atoi(code)){
+                response = 1;
+                printf("ok found\n");
+                sprintf(content[line], "%s %s %s %d %d %.2f\n", number, expir_date, code, 1, usrId, solde);
+            }
+            else{
+                content[line] = buffer;
+            }
+            printf("BUFF-line: %s\n", content[line]);
+            line ++;
 
-    return date_expir;
-}
-void generate_card(){
-    int bin = 1470;
-    int a = bin;
-
-    // generation des cles
-   /* int p = 0;
-    do{
-        srand((unsigned)time(NULL));
-        p = rand()%9999;
+        }
+        if(response==1){// Modify file content
+            rewind(f_card);
+            int l;
+            for(l=0; l<line-1; l++){
+               fprintf(f_card, "%s", content[l]);
+            }
+            (content[l])[strlen(content[l])-1]= ' ';
+            fprintf(f_card, "%s", content[l]);
+            fflush(f_card);
+        }
     }
-    while(p<=a || !is_primary(p));*/
-    int p = 6599; // Fixation de la valeur de p
-    int q = (p-1)/2;
-
-    // Creation du gemerateur
-    int g = 0;
-    do{
-        srand((unsigned)time(NULL));
-        g = rand()%999;
+    else
+    {
+        perror("ERROR: Can not access cards file!");
     }
-    while(p<=g || g<=0 || pow_modulo_long((long)g, 2, p)==1 || pow_modulo_long((long)g, q, p)==1);
 
-    int g_pow_a = pow_modulo_long((long)g, a, p);
+    printf("***** ACTIVATE ENDED *****\n");
 
-    int *key = malloc(3*sizeof(int));
-    key[0] = a;
-    key[1] = g;
-    key[2] = p;
-
-    char *expir_date = get_expir_date();
-    int *signature = (int*)malloc(2*sizeof(int));
-    signature = msg_signature(expir_date, key);
-
-    printf("card_number: %d %8.4d %8.4d %d code:%d date: %s\n", a, signature[0], signature[1], p, g, expir_date);
+    return response; // Card unknown
 }
-int main(int argc, char *argv[])
+
+int credit_card(FILE* f_card, char *number, char *expir_date, char *code, double amount)
 {
-    //printf("ascii: %d\n", pow_modulo_long(99999999, 2, 1000));
-    generate_card();
-    //transforme_to_ASCII2("022015", 6599);
-    //char a = '9';
-   // int c = atoi(a);
-   // printf("code:%d \n", (int) 9);
-    //save_card("1111222233334444", 1015, 469);
-    return 0;
+    printf("***** CREDIT BALANCE STARTED *****\n");
+    int response = 0;
+    if (f_card != NULL)
+    {
+        char buffer[200];
+        // go to end file
+        int sz_line = 50;
+        int line = 0;
+        char **content;
+        content = malloc(1*sizeof(*content));
+
+        char *num_f = malloc(16*sizeof(char));
+        char *date_f = malloc(16*sizeof(char));
+        char *code_f = malloc(3*sizeof(char));
+        int state;
+
+        rewind(f_card);
+        while(fgets(buffer, 200, f_card)) {
+            int usrId;
+            float solde;
+            sscanf (buffer,"%s %s %s %d %d %f", num_f, date_f, code_f, &state, &usrId, &solde);
+            //printf("Values line: %s %s %s %d %d %.2f\n", num_f, date_f, code_f, state, usrId, solde);
+            if(line>0){
+                content = realloc(content, (line+1)*sizeof(*content) );
+            }
+            content[line] = malloc(sz_line*sizeof(content[line]));
+            if(content[line]==NULL){
+                perror("ERROR: Can not allocate memory\n");
+                exit(1);
+            }
+
+            if(atol(num_f)==atol(number) && atoi(date_f)==atoi(expir_date) && atoi(code_f)==atoi(code)){
+                response = 1;
+                amount += solde;
+                sprintf(content[line], "%s %s %s %d %d %.2f\n", number, expir_date, code, 1, usrId, amount);
+            }
+            else{
+                content[line] = buffer;
+            }
+            //printf("BUFF-line: %s\n", content[line]);
+            line ++;
+
+        }
+        if(response==1){// Modify file content
+            rewind(f_card);
+            int l;
+            for(l=0; l<line-1; l++){
+               fprintf(f_card, "%s", content[l]);
+            }
+            (content[l])[strlen(content[l])-1]= ' ';
+            fprintf(f_card, "%s", content[l]);
+            fflush(f_card);
+        }
+    }
+    else
+    {
+        perror("ERROR: Can not access cards file!");
+    }
+
+    printf("***** CREDIT BALANCE ENDED *****\n");
+    return response; // Card unknown
+}
+
+int debit_card(FILE* f_card, char *number, char *expir_date, char *code, double amount)
+{
+    printf("***** DEBIT BALANCE STARTED *****\n");
+    int response = 0;
+    if (f_card != NULL)
+    {
+        char buffer[200];
+        // go to end file
+        int sz_line = 50;
+        int line = 0;
+        char **content;
+        content = malloc(1*sizeof(*content));
+
+        char *num_f = malloc(16*sizeof(char));
+        char *date_f = malloc(16*sizeof(char));
+        char *code_f = malloc(3*sizeof(char));
+        int state;
+
+        rewind(f_card);
+        while(fgets(buffer, 200, f_card)) {
+            int usrId;
+            float solde;
+            sscanf (buffer,"%s %s %s %d %d %f", num_f, date_f, code_f, &state, &usrId, &solde);
+            //printf("Values line: %s %s %s %d %d %.2f\n", num_f, date_f, code_f, state, usrId, solde);
+            if(line>0){
+                content = realloc(content, (line+1)*sizeof(*content) );
+            }
+            content[line] = malloc(sz_line*sizeof(content[line]));
+            if(content[line]==NULL){
+                perror("ERROR: Can not allocate memory\n");
+                exit(1);
+            }
+            if(atol(num_f)==atol(number) && atoi(date_f)==atoi(expir_date) && atoi(code_f)==atoi(code)){
+                response = -1;
+                if(solde>amount){
+                    response = 1;
+                    solde -= amount;
+                    sprintf(content[line], "%s %s %s %d %d %.2f\n", number, expir_date, code, 1, usrId, solde);
+                }
+                else{
+                    content[line] = buffer;
+                }
+            }
+            else{
+                content[line] = buffer;
+            }
+            //printf("BUFF-line: %s\n", content[line]);
+            line ++;
+
+        }
+
+        if(response==1){// Modify file content
+            rewind(f_card);
+            int l;
+            for(l=0; l<line-1; l++){
+               fprintf(f_card, "%s", content[l]);
+            }
+            (content[l])[strlen(content[l])-1]= ' ';
+            fprintf(f_card, "%s", content[l]);
+
+            fflush(f_card);
+        }
+    }
+    else
+    {
+        perror("ERROR: Can not access cards file!");
+    }
+
+    printf("***** DEBIT BALANCE ENDED *****\n");
+    return response; // Card unknown
+}
+
+void save_transaction(FILE* f_transactions, char *type, char *number, char *num_from_dest, double amount)
+{
+    if (f_transactions != NULL)
+    {
+        //printf("infos to save:%s\n", card_infos);
+        char buffer[200];
+        // go to end file
+        while(fgets(buffer, 200, f_transactions)) {}
+        //numero date_heure type num from/dest amount
+        fprintf(f_transactions, "%s %s %s %s %.2f\n", number, get_date_time(), type, num_from_dest, amount);
+
+        fflush(f_transactions);
+        printf("New transaction saved< CARD:%s DATE:%s TYPE:%s CARD-2%s AMOUNT:%.2f>\n", number, get_date_time(), type, num_from_dest, amount);
+    }
+    else
+    {
+        perror("ERROR: Can not access transactions file!");
+    }
+}
+
+void logs(FILE* f_logs, char *type, char *adress, char *msg)
+{
+    if (f_logs != NULL)
+    {
+        //printf("infos to save:%s\n", card_infos);
+        char buffer[200];
+        // go to end file
+        while(fgets(buffer, 200, f_logs)) {}
+        //date-heure tye=req/resp adress, msg
+        fprintf(f_logs, "%s %s %s %s\n", get_date_time(), type, adress, msg);
+        fflush(f_logs);
+        printf("New Log< DATE:%s TYPE:%s Address%s MSG:%s>\n", get_date_time(), type, adress, msg);
+    }
+    else
+    {
+        perror("ERROR: Can not access logs file!");
+    }
 }

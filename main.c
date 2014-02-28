@@ -2,49 +2,31 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-#include "cards_manager.h"
-#include "functions.h"
+//#include "cards_manager.h"
+//#include "database.h"
+//#include "functions.h"
 
+void ma_f(char **chaine)
+{
+    printf("before= %s\n", *chaine);
+    *chaine= "malaba";
+    printf("after= %s\n", *chaine);
+}
 
 int main()
 {
-    int nb_elm = 32, sz_elm =4;
-    int i;
-    char **gb_data;
-    gb_data = malloc(nb_elm*sizeof(*gb_data));
-    if(gb_data==NULL){
-        perror("Erreur allocation impossible\n");
-        exit(1);
-    }
-    for(i=0 ; i < nb_elm ; i++){
-       gb_data[i] = malloc(sz_elm * sizeof(gb_data[i]));
-       if(gb_data[i]==NULL){
-            perror("Erreur allocation de %d impossible\n");
-            exit(1);
-        }
-    }
-
-    gb_data[0] = "0200";
-    //printf("test:%s\n", gb_data[0]);
-
-    for(i=1; i<nb_elm; i++){
-        if(i<nb_elm/2){
-            gb_data[i] = "1234";
-        }
-        else{
-            gb_data[i] = "    ";
-        }
-
-        if(i==27){
-            gb_data[i] = "1483";
-        }
-
-    }
-    /*for(i=0; i<nb_elm; i++){
-        printf("tab:%d contenu:%s\n", i, gb_data[i]);
-    }*/
-
-    calculate_bitmap(gb_data, nb_elm);
-    //printf("test:%s\n", base_convert("11100100110010001011", 2, 16));
+    /*FILE* f_card = fopen("database/cards.dat", "r+");
+    credit_card(f_card, "1470338160926599", "022015", "078", (float)1500);
+    //fseek(f_card, 0, SEEK_SET);
+    debit_card(f_card, "1470338160926599", "022015", "078", (float)1800);
+    //fseek(f_card, 0, SEEK_SET);
+    fclose(f_card);*/
+    //printf("now: %s\n", get_date_time());
+    //FILE* f_transactions = fopen("database/transactions.dat", "r+");
+    //save_transaction(f_transactions, "C", "1470338160926599", "", 2000);
+    char *ch = malloc(6*sizeof(char));
+    ch = "lamine";
+    ma_f(&ch);
+    printf("end= %s\n", ch);
     return 0;
 }

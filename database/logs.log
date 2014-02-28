@@ -1,0 +1,22 @@
+2014-02-28 01:25:07 SERVER  Server started on address: server:adminuser-VirtualBox and port
+2014-02-28 01:27:40 SERVER  Server started on address: and port 5000
+2014-02-28 01:29:53 SERVER  Server started on address: and port 5000
+2014-02-28 01:30:32 SERVER  Server started on address:adminuser-VirtualBox and port 5000
+2014-02-28 01:32:40 SERVER  Server started on address:(null) and port 5000
+2014-02-28 02:00:30 SERVER  Server started on address:-497268968 and port 5000
+2014-02-28 02:01:35 SERVER  Server started on address: and port 5000
+2014-02-28 02:03:12 SERVER ©s Server started on address: and port 5000
+2014-02-28 02:03:47 SERVER  Server started on address: and port 5000
+2014-02-28 02:04:01 CLIENT 127.0.0.1 Connection accepted from client address:127.0.0.1 and port: d
+2014-02-28 02:07:16 SERVER  Server started on address:0.0.0.0 and port 5000
+2014-02-28 02:09:09 SERVER 0.0.0.0 Server started on 0.0.0.0/5000
+2014-02-28 02:09:15 CLIENT 127.0.0.1 Connection accepted from client: 127.0.0.1/32873
+2014-02-28 02:17:41 SERVER 0.0.0.0 Server started on 0.0.0.0/5000
+2014-02-28 02:17:46 CLIENT 127.0.0.1 Connection accepted from client: 127.0.0.1/32877
+2014-02-28 02:17:51 CLIENT 127.0.0.1 Connection close with client: 127.0.0.1/32877
+2014-02-28 02:21:03 SERVER 0.0.0.0 Server started on 0.0.0.0/5000
+2014-02-28 02:21:11 CLIENT 127.0.0.1 Connection accepted from client: 127.0.0.1/32878
+2014-02-28 02:21:45 CLIENT 127.0.0.1 Connection close with client: 127.0.0.1/32878
+2014-02-28 02:21:49 CLIENT 127.0.0.1 Connection accepted from client: 127.0.0.1/32879
+2014-02-28 02:22:59 CLIENT 127.0.0.1 Connection close with client: 127.0.0.1/32879
+2014-02-28 02:23:02 CLIENT 127.0.0.1 Connection accepted from client: 127.0.0.1/32880

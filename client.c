@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 
     /* lecture de la reponse en provenance du serveur */
     int sz_buffer = 200;
-    char *msg_server = malloc(sz_buffer*sizeof(char));
+    char *msg_server = calloc(sz_buffer, sizeof(char));
     //while((longueur = read(socket_descriptor, msg_server, 200)) > 0) {
     while((longueur = my_read_socket(socket_descriptor, &msg_server, sz_buffer)) > 0) {
         //printf("reponse du serveur : \n");
@@ -111,6 +111,7 @@ int main(int argc, char **argv) {
         fflush(stdout);
         if(atoi(str_sub(msg_server, 0, 2))==100){// scanf a values
             printf("CLIENT>>");
+
             scanf("%s", msg_client);
             fflush(stdin);
             //write(socket_descriptor, msg_client, strlen(msg_client));

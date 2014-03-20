@@ -4,58 +4,6 @@
 #include "cards_manager.h"
 #include "functions.h"
 
-int is_prime(int number)
-{
-    int i;
-    for(i=2; i<number; i++){
-        if(number%i == 0) return 0;
-    }
-    return 1;
-}
-
-int pow_modulo(unsigned int a, unsigned int b, unsigned int p)
-{
-   if (b==0) return 1;
-    if (b==1) return a%p;
-
-    if ( (b & 0x01 ) == 0){
-        int c = pow_modulo(a, b >> 1, p);
-        return (c * c)%p;
-    }
-    else{
-        return (a * pow_modulo(a, b - 1, p))%p;
-    }
-}
-
-int pow_modulo_long(unsigned long a, unsigned int b, unsigned int p)
-{
-    if (b==0) return 1;
-    if (b==1) return a%p;
-
-    if ( (b & 0x01 ) == 0){
-        int c = pow_modulo_long(a, b >> 1, p);
-        return (c * c)%p;
-    }
-    else{
-        return (a * pow_modulo_long(a, b - 1, p))%p;
-    }
-}
-
-int pow_modulo_long_long(long long a, unsigned int b, unsigned int p)
-{
-    if (b==0) return 1;
-    if (b==1) return a%p;
-
-    if ( (b & 0x01 ) == 0){
-        int c = pow_modulo_long_long(a, b >> 1, p);
-        return (c * c)%p;
-    }
-    else{
-        return (a * pow_modulo_long_long(a, b - 1, p))%p;
-    }
-}
-
-
 long long transforme_m_to_ASCII(char *msg)
 {
     long long msg_ascii;

@@ -16,7 +16,7 @@ typedef struct
 int save_client(FILE* f_client, char *firstname, char *lastname, char *birthday)
 {
     //FILE* f_client = fopen("database/clients.dat", "r+");
-    int nb_clients = 0;
+    int max_id=0, usr_id;
     printf("saving client: %s-%s-%s\n", firstname, lastname, birthday);
     if (f_client != NULL)
     {
@@ -24,12 +24,14 @@ int save_client(FILE* f_client, char *firstname, char *lastname, char *birthday)
         char buffer[200];
         // go to end file
         //fseek(f_client, 0, SEEK_END);
-        nb_clients = 1;
         while(fgets(buffer, 200, f_client)) {
-            nb_clients ++;
+            sscanf (buffer,"%d", &usr_id);
+            if(usr_id>max_id)
+                max_id = usr_id;
         }
+        max_id++;
         //id prenom nom date-naissance
-        fprintf(f_client, "%d %s %s %s\n", nb_clients, firstname, lastname, birthday);
+        fprintf(f_client, "%d %s %s %s\n", max_id, firstname, lastname, birthday);
 
         //fflush(f_client);
         //rewind(f_client);
@@ -40,7 +42,7 @@ int save_client(FILE* f_client, char *firstname, char *lastname, char *birthday)
         // On affiche un message d'erreur si on veut
         perror("ERROR : Can not access clients file!");
     }
-    return nb_clients;
+    return max_id;
 }
 
 void save_card(FILE* f_card, char *card_infos, int client_id)
@@ -270,6 +272,62 @@ int debit_card(FILE* f_card, char *number, char *expir_date, char *code, double 
 
     printf("***** DEBIT BALANCE ENDED *****\n");
     return response; // Card unknown
+}
+
+char* list_transactions(FILE* f_transactions, char *number)
+{
+    printf("***** STATEMENTS STARTED *****\n");
+    int response = 0;
+    if (f_transactions != NULL)
+    {
+        char buffer[200];
+        // go to end file
+        int sz_line = 50;
+        int line = 0;
+        char **content;
+        content = malloc(1*sizeof(*content));
+
+        char *num_f = malloc(16*sizeof(char));
+        char *num_dest = malloc(16*sizeof(char));
+        char *date_ = malloc(10*sizeof(char));
+        char *_time = malloc(8*sizeof(char));
+        char type;
+        float amount, balance_after;
+
+        rewind(f_transactions);
+        char **list_trans;
+
+        int max_trans = 10, sz_line=30, trans=0;
+        list_trans = calloc(max_trans, sizeof(*list_trans));
+
+        while(fgets(buffer, 200, f_transactions)) {
+            //fprintf(f_transactions, "%s %s %s %s %.2f\n", number, get_date_time(), type, num_from_dest, amount);
+
+            sscanf (buffer,"%s %s %s %d %d %f", num_f, date_, _time, &type, num_dest, &amount);
+
+            if(atol(num_f)==atol(number)){
+                nb_trans--;
+
+                response = 1;
+                list_trans[nb_trans] = calloc(sz_line, sizeof(list_trans[nb_trans]));
+                sprintf(list_trans[nb_trans], "%s %s|%c|%.2f", date_, _time, type, amount);
+
+                if(nb_trans==0){// We decal list for last
+
+                }
+
+            }
+
+        }
+
+    }
+    else
+    {
+        perror("ERROR: Can not access cards file!");
+    }
+
+    printf("***** STATEMENTS ENDED *****\n");
+    return response;
 }
 
 void save_transaction(FILE* f_transactions, char *type, char *number, char *num_from_dest, double amount)

@@ -8,5 +8,7 @@ int debit_card(FILE* f_card, char *number, char *expir_date, char *code, double 
 int credit_card(FILE* f_card, char *number, char *expir_date, char *code, double amount);
 void save_transaction(FILE* f_transactions, char *type, char *number, char *num_from_dest, double amount);
 void logs(FILE* f_ogs, char *type, char *adress, char *request);
+char* list_transactions(FILE* f_transactions, char *number);
+float get_balance(FILE* f_card, char *number, char *expir_date, char *code);
 //void logs(FILE* f_ogs, char *adress, char *request, char *date);
 #endif // DATABASE_H_INCLUDED

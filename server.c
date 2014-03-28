@@ -47,7 +47,8 @@ void renvoi (int sock) {
             return;
 
         printf("message lu 1 : %s \n", msg_client);
-        if(msg_client[0]=='y' || strncasecmp(msg_client, "yes", 3)==0){// Generating a new card
+        //if(msg_client[0]=='y' || strncasecmp(msg_client, "yes", 3)==0){// Generating a new card
+        if(strcasecmp(msg_client,"y")==0 || strcasecmp(msg_client, "yes")==0){
             char firstname[30];
             char *lastname = malloc(30*sizeof(char));
             char *birthday = malloc(15*sizeof(char));
@@ -112,7 +113,7 @@ void renvoi (int sock) {
             sprintf(card_infos, "%s", msg_client);
 
             int resp = 0;
-            if(strlen(card_infos)>=27){
+            if(strlen(card_infos)==27){
                 resp = check_card_number(str_sub(card_infos, 0, 15), str_sub(card_infos, 17, 22), str_sub(card_infos, 24, 26));
             }
 
@@ -123,6 +124,7 @@ void renvoi (int sock) {
                 goto typing_card_infos;
             }
             else{
+                choose_option:
                 msg_client = malloc(buf_sz*sizeof(char));
                 char *choice = malloc(1*sizeof(char));
 
@@ -150,13 +152,26 @@ void renvoi (int sock) {
 
                     case 1: // activate card
                         resp_f = activate_card(f_card, number, exp_date, code);
-                        if(resp_f)
+                        if(resp_f){
                             question = "200BANK >> SUCCESS: Card activated,You can perform operations.\n";
-                        else
-                            question = "300BANK >> Error: Card can not be activated!\n";
+                        }
+                        else{
+                            question = "300BANK >> Error: Sorry card can not be activated!\n";
+                        }
+
+                        my_write_socket(sock, question,strlen(question));
+                        goto choose_option;
                     break;
 
                     case 2: //debit(double amount);
+                        resp = check_card(f_card, number, exp_date, code);
+
+                        if(resp==-1){
+                            question = "300BANK >> Error: Card not activated, Please active you card first!\n";
+                            my_write_socket(sock, question,strlen(question));
+
+                            goto choose_option;
+                        }
                         // ask amount
                         typing_amount_debit:
                         msg_client = malloc(buf_sz*sizeof(char));
@@ -224,13 +239,18 @@ void renvoi (int sock) {
                         }
                     break;
 
-                    case 5: //get balance
+                    case 4: //get balance
+                        //
+                        question = malloc(buf_sz*sizeof(char));
+                        sprintf(question, "200BANK >> Your balance at this time is: |%.2f|\n", get_balance(f_card, number, exp_date, code));
                     break;
 
-                    case 6: //releve
+                    case 5: //releve
+                        question = malloc(buf_sz*sizeof(char));
+                        sprintf(question, "200BANK >> Your transactions list:%s\n", list_transactions(f_transactions, number));
                     break;
 
-                    case 4: //transfert(char *num_dest, double amount);
+                    case 6: //transfert(char *num_dest, double amount);
                     break;
 
                     default:

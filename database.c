@@ -123,10 +123,10 @@ int activate_card(FILE* f_card, char *number, char *expir_date, char *code)
             rewind(f_card);
             int l;
             for(l=0; l<line-1; l++){
-                printf("l:%d cont:%s", l, content[l]);
+                //printf("l:%d cont:%s", l, content[l]);
                 fprintf(f_card, "%s", content[l]);
             }
-            printf("l:%d cont: %s", l, content[l]);
+            //printf("l:%d cont: %s", l, content[l]);
             (content[l])[strlen(content[l])-1]= ' ';
             fprintf(f_card, "%s", content[l]);
             fflush(f_card);
@@ -181,7 +181,8 @@ int credit_card(FILE* f_card, char *number, char *expir_date, char *code, double
                 sprintf(content[line], "%s %s %s %d %d %.2f\n", number, expir_date, code, 1, usrId, amount);
             }
             else{
-                content[line] = buffer;
+                //content[line] = buffer;
+                sprintf(content[line], "%s", buffer);
             }
             //printf("BUFF-line: %s\n", content[line]);
             line ++;
@@ -247,7 +248,8 @@ int debit_card(FILE* f_card, char *number, char *expir_date, char *code, double 
                     sprintf(content[line], "%s %s %s %d %d %.2f\n", number, expir_date, code, 1, usrId, solde);
                 }
                 else{
-                    content[line] = buffer;
+                    //content[line] = buffer;
+                    sprintf(content[line], "%s", buffer);
                 }
             }
             else{
